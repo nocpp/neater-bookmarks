@@ -12,26 +12,9 @@ function init() {
 	var navigator = window.navigator;
 	var body = document.body;
 	var _m = chrome.i18n.getMessage;
-	var _b = chrome.extension.getBackgroundPage().console;
-	
-	// Error alert
-	var AlertDialog = {
-		open: function(dialog){
-			if (!dialog) return;
-			$('alert-dialog-text').innerHTML = dialog;
-			body.addClass('needAlert');
-		},
-		close: function(){
-			body.removeClass('needAlert');
-		}
-	};
-	// popdown toast when an error occurs
-	window.addEventListener('error', function(){
-		AlertDialog.open('<strong>' + _m('errorOccured') + '</strong><br>' + _m('reportedToDeveloper'));
-	}, false);
 	
 	// Platform detection
-	var os = (navigator.platform.toLowerCase().match(/mac|win|linux/i) || ['other'])[0];
+	var os = (navigator.userAgentData.platform.toLowerCase().match(/mac|win|linux/i) || ['other'])[0];
 	body.addClass(os);
 	
 	// Chrome version detection
@@ -102,7 +85,7 @@ function init() {
 	var generateBookmarkHTML = function(title, url, extras){
 		if (!extras) extras = '';
 		var u = url.htmlspecialchars();
-		var favicon = 'chrome://favicon/' + u;
+		var favicon = 'https://www.google.com/s2/favicons?domain=' + u;
 		var tooltipURL = url;
 		if (/^javascript:/i.test(url)){
 			if (url.length > 140) tooltipURL = url.slice(0, 140) + '...';
@@ -916,6 +899,7 @@ function init() {
 					liChild.querySelector('a, span').focus();
 				} else {
 					var nextLi = li.nextElementSibling;
+          let LastLi = null;
 					if (nextLi){
 						nextLi.querySelector('a, span').focus();
 					} else {
@@ -1433,7 +1417,6 @@ function init() {
 	var closeDialogs = function(){
 			if (body.hasClass('needConfirm')) ConfirmDialog.fn2(); ConfirmDialog.close();
 			if (body.hasClass('needEdit')) EditDialog.close();
-			if (body.hasClass('needAlert')) AlertDialog.close();
 	};
 	document.addEventListener('keydown', function(e){
 		if (e.keyCode == 27 && (body.hasClass('needConfirm') || body.hasClass('needEdit') || body.hasClass('needAlert'))){ // esc
@@ -1511,7 +1494,3 @@ function init() {
 		style.inject(document.body);
 	}
 })(window);
-
-onerror = function(){
-	chrome.extension.sendRequest({error: [].slice.call(arguments)})
-};
